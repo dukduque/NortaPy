@@ -1,6 +1,5 @@
 import numpy as np
-from norta import fit_NORTA
-
+import norta.fit_NORTA as fit_NORTA
 
 """
 Example of using NORTA
@@ -15,7 +14,7 @@ data = np.random.exponential(size=(n_sample, d_sample)) + np.random.multivariate
 )
 n = len(data)
 d = len(data[0])
-norta_data = fit_NORTA(data, n, d)
+norta_data = fit_NORTA(data, n, d, output_flag=0)
 NG = norta_data.gen(1000)
 print(NG.mean(axis=0), data.mean(axis=0))
 print(np.corrcoef(NG, rowvar=0))
