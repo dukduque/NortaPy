@@ -1,13 +1,11 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Tue Oct  9 12:58:58 2018
-Updateed on Wed Jun 19 13:14:19 2019
+Updated on Wed Jun 19 13:14:19 2019
 @author: Daniel Duque
 @email: d.duque25@gmail.com
 This module implements Normal-to-Anything (NORTA) algorithm
 to generate correlated random vectors. The original paper is by
-Cario and Nelson (2007). 
+Cario and Nelson (2007).
 """
 
 import numpy as np
@@ -54,14 +52,10 @@ def find_rho_z(i, j, F_invs, CovX, EX):
     while np.abs(rho_u - rho_d) > 1e-4:
         covZ = np.array([[1, rho_z], [rho_z, 1]])
         f = conv_exp(covZ, F_i_inv, F_j_inv, gaussian_sampling=GAUSS_SAMPLING)
-        EXiXj = montecarlo_integration(
-            f, n=MC_SAMPLES, c=covZ, m=np.zeros(2), gaussian_sampling=GAUSS_SAMPLING
-        )
+        EXiXj = montecarlo_integration(f, n=MC_SAMPLES, c=covZ, m=np.zeros(2), gaussian_sampling=GAUSS_SAMPLING)
         CXiXj = EXiXj - EXi * EXj
         if OUTPUT == 1:
-            print(
-                "  rhoZ=%10.4e, C(i,j)=%10.4e, Cov=%10.4e" % (rho_z, CXiXj, CovX[i, j])
-            )
+            print("  rhoZ=%10.4e, C(i,j)=%10.4e, Cov=%10.4e" % (rho_z, CXiXj, CovX[i, j]))
         if np.abs(CXiXj - CovX[i, j]) / cor_dem < 1e-4:
             #
             return rho_z
@@ -72,7 +66,7 @@ def find_rho_z(i, j, F_invs, CovX, EX):
             else:  # rhoC_ij <= rho_ij
                 rho_d = rho_z
                 rho_z = 0.5 * (rho_z + rho_u)
-
+    
     return rho_z
 
 
@@ -124,20 +118,19 @@ def conv_exp(covZ, F_i_inv, F_j_inv, gaussian_sampling=True):
             to the sampling mechanism in the Montecarlo Integration method
     """
     if gaussian_sampling:
-
+        
         def f(z1, z2):
             return F_i_inv(Z.cdf(z1)) * F_j_inv(
-                Z.cdf(z2)
-            )  # remove bi_x pdf since montecarlo is sampling according to  bi_z
-
+                Z.cdf(z2))  # remove bi_x pdf since montecarlo is sampling according to  bi_z
+        
         return f
     else:
         bi_z = stats.multivariate_normal(cov=covZ)
-
+        
         def f(z1, z2):
             z1z2 = np.vstack((z1, z2)).transpose()
             return F_i_inv(Z.cdf(z1)) * F_j_inv(Z.cdf(z2)) * bi_z.pdf(z1z2)
-
+        
         return f
 
 
@@ -150,7 +143,7 @@ def build_empirical_inverse_cdf(X):
         X:Sorted vector of observations
     """
     n = len(X)
-
+    
     def f(prob):
         """
         Args:
@@ -158,7 +151,7 @@ def build_empirical_inverse_cdf(X):
         """
         # assert 0<=prob<=1, 'Argument of inverse function is a probability >=0 and <= 1.'
         return X[np.minimum((n * np.array(prob)).astype(int), n - 1)]
-
+    
     return f
 
 
@@ -195,10 +188,8 @@ def fit_NORTA(data, n, d, F_invs=None, output_flag=0):
         D = np.eye(d)
         EX = np.mean(data, axis=0)
         if type(F_invs) != list:
-            F_invs = [
-                build_empirical_inverse_cdf(np.sort(data[:, i])) for i in range(d)
-            ]
-
+            F_invs = [build_empirical_inverse_cdf(np.sort(data[:, i])) for i in range(d)]
+        
         for i in range(d):
             for j in range(i + 1, d):
                 D[i, j] = find_rho_z(i, j, F_invs, CovX, EX)
@@ -209,7 +200,7 @@ def fit_NORTA(data, n, d, F_invs=None, output_flag=0):
         except:
             CovX = (1 - lambda_param) * CovX + lambda_param * VarX
             print("Cholesky factorization failed, starting over")
-
+    
     NORTA_GEN = NORTA(F_invs, C)
     return NORTA_GEN
 
@@ -221,14 +212,14 @@ class NORTA:
         F (list of func): Marginal inverse CDFs
         C (ndarry): numpy array with the Cholesky factorization
     """
-
+    
     def __init__(self, Finv, C):
         reset_stream()
         assert len(Finv) == len(C), "Dimension of the marginals and C dont match."
         self.F_inv = Finv
         self.C = C
         reset_stream()
-
+    
     def gen(self, n=1):
         """
         Generates an array of vectors of where each component follow the
@@ -241,7 +232,6 @@ class NORTA:
         d = len(self.F_inv)
         w = rnd.normal(size=(d, n))
         z = self.C.dot(w)
-
+        
         X = np.array([self.F_inv[i](Z.cdf(z[i])) for i in range(d)]).transpose()
         return X
-
