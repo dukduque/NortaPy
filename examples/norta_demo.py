@@ -8,6 +8,7 @@ from norta import fit_NORTA as fit_NORTA
 """
 Example of using NORTA
 """
+
 np.random.seed(0)
 n_sample = 100
 d_sample = 5
