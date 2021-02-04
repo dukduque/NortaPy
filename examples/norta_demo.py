@@ -10,7 +10,7 @@ Example of using NORTA
 """
 np.random.seed(0)
 n_sample = 100
-d_sample = 10
+d_sample = 5
 cov_sample = np.eye(d_sample) + np.random.rand(d_sample, d_sample)
 sim_cov = cov_sample.transpose().dot(cov_sample)
 data = np.random.exponential(size=(n_sample, d_sample)) + np.random.multivariate_normal(
