@@ -43,7 +43,7 @@ def find_rho_z(rho_input):
     if OUTPUT == 1:
         print("Computing rhoZ(%i,%i)" % (i, j))
     cor_dem = np.sqrt(CovX[i, i] * CovX[j, j])
-    rho_z = CovX[i, j] / cor_dem
+    rho_z = CovX[i, j] / cor_dem if cor_dem > 0 else 0
     rho_u = 1 if CovX[i, j] > 0 else 0
     rho_d = -1 if CovX[i, j] < 0 else 0
     F_i_inv = F_invs[i]
